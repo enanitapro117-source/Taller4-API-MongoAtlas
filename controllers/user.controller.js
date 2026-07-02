@@ -1,4 +1,5 @@
 const User = require('../models/user.model');
+const bcrypt = require('bcryptjs');
 
 // Obtener todos los usuarios (Read)
 const getUsers = async (req, res) => {
@@ -12,9 +13,10 @@ const getUsers = async (req, res) => {
 
 // Crear un nuevo usuario (Create)
 const createUser = async (req, res) => {
-  const { name, email } = req.body;
+  const { name, email, password } = req.body;
   try {
-    const newUser = new User({ name, email });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ name, email, password: hashedPassword });
     await newUser.save();
     res.status(201).json(newUser);
   } catch (error) {
@@ -25,7 +27,7 @@ const createUser = async (req, res) => {
 // Actualizar un usuario existente (Update)
 const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { name, email } = req.body;
+  const { name, email, password } = req.body;
 
   try {
     const updatedUser = await User.findByIdAndUpdate(
